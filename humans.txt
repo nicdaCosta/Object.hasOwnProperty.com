@@ -1,0 +1,11 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+
+    Nic da Costa -- Creator -- @nic_daCosta
+
+# TECHNOLOGY COLOPHON
+
+    HTML5 ( HTML Boilerplate ), CSS3
+    jQuery, Modernizr , Bootstrap , Basket.js
