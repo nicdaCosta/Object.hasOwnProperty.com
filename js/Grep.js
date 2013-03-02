@@ -87,8 +87,8 @@
 
 	};
 
-	function buildResult( currentProp , currentPropValue ) {
-
+	function buildResult( e , currentProp , currentPropValue , promise ) {
+		
 		var currentPropType = typeof currentPropValue,
 			result = document.createDocumentFragment(),
 			tmpLI = document.createElement( 'li' ),
@@ -107,12 +107,15 @@
 
 			tmpDiv.className = 'well';
 
-		if ( currentPropType === 'object' ) {
+		// iterate through sub methods and properties of Objects, unless is type MineTypeArray or PluginArra due to an "infinate loop" created due to prototypes
+		if ( currentPropType === 'object' && currentPropValue && !( currentPropValue instanceof window.MimeTypeArray ) && !( currentPropValue instanceof window.PluginArray ) ) {
 
 			var tmpUl = document.createElement( 'ul' );
 
 			tmpUl.className = 'nav nav-stacked nav-tabs';
-			var item;
+			var item,
+				arrPromises = [],
+				currentPromise;
 
 			//var tmpProps = Object.getOwnPropertyNames( currentPropValue );
 
@@ -120,26 +123,51 @@
 
 			for ( item in currentPropValue ) {
 
-				tmpUl.appendChild( buildResult( item , currentPropValue[ item ] ) );
-				
+				currentPromise = new window.RSVP.Promise();
+				// build array of promises
+				arrPromises.push( currentPromise );
+
+				// trigger build
+				$( document ).trigger( 'buildRequired' , [ item , currentPropValue[ item ] , currentPromise ] );
+
 			}
 
-			tmpDiv.appendChild( tmpUl );
+			// once all promises have been forfilled, append results to UL element, then append to DIV
+			window.testProm = arrPromises;
+			window.RSVP.all( arrPromises ).then( function( arrResultLI ) {
+
+					arrResultLI.forEach( function( resultLI ) {
+
+						tmpUl.appendChild( resultLI );
+
+					});
+
+					tmpDiv.appendChild( tmpUl );
+
+					tmpLI.appendChild( tmpDiv );
+
+					result.appendChild( tmpLI );
+
+					// resolve passed through promise, element representing object has been built
+					promise.resolve( result );
+
+				} );
 
 		}
 		else {
 
 			var tmpP = document.createElement( 'p' );
-			tmpP.textContent =  currentPropValue;
+			tmpP.textContent =  currentPropValue || 'null';
 			tmpDiv.appendChild( tmpP );
+			
+			tmpLI.appendChild( tmpDiv );
+
+			result.appendChild( tmpLI );
+
+			promise.resolve( result );
 			
 		}
 
-		tmpLI.appendChild( tmpDiv );
-
-		result.appendChild( tmpLI );
-
-		return result;
 
 		/* single line - <li>
 							<a class="isObject">frameElement <i class="icon-result"></i></a>
@@ -175,26 +203,60 @@
 
 	buildResult.init = function ( e , grepResult , $searchTerm ) {
 
-		var results;
+		grepResult = grepResult || {};
 
-		if ( !Object.getOwnPropertyNames( grepResult ).length ) {
+		var results = document.createDocumentFragment(),
+			promResult = new window.RSVP.Promise();
 
-			// build no results found
-			results = '';
+
+		if ( !!Object.getOwnPropertyNames( grepResult ).length ) {
+
+			$( document ).trigger( 'buildRequired' , [ 'window.Grep : ' + $searchTerm , grepResult , promResult ] );
 
 		}
 		else {
 
-			results = buildResult( 'window.Grep : ' + $searchTerm , grepResult );
+			// build no results found
+			var tmpLI = document.createElement( 'li' ),
+				tmpA = document.createElement( 'a' ),
+				tmpI = document.createElement( 'i' ),
+				tmpDiv = document.createElement( 'div' ),
+				tmpP = document.createElement( 'p' );
+
+			tmpI.className = 'icon-result';
+
+			tmpA.href = '#';
+			tmpA.className = 'isObject';
+			tmpA.textContent = 'window.Grep : No Results Found - ' + $searchTerm;
+			tmpA.appendChild( tmpI );
+
+
+			tmpDiv.className = 'well';
+
+			tmpP.textContent = ' No results found. Please try another term';
+
+			tmpDiv.appendChild( tmpP );
+
+			tmpLI.appendChild( tmpA );
+			tmpLI.appendChild( tmpDiv );
+
+			results.appendChild( tmpLI );
+
+			promResult.resolve( results );
 
 		}
 
-		// search completed, return results
-		$( document ).trigger( 'endSearch' , results );
+		promResult.then( function( builtResult ) {
+			
+				// search completed, return results
+				$( document ).trigger( 'endSearch' , builtResult );
+
+			} );
 
 	};
 
 	$( document ).on( 'beginSearch' , initGrep );
 	$( document ).on( 'beginBuild' , buildResult.init );
+	$( document ).on( 'buildRequired' , buildResult );
 	
 } ( window , window.document , window.jQuery ) );

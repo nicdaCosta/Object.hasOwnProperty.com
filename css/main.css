@@ -194,6 +194,8 @@ aside {
 @media all and (max-width: 450px) {
 
 	.hero-unit {
+		width: 98%;
+		margin: 0 1%;
 		padding: 0.75em;
 	}
 
@@ -202,7 +204,7 @@ aside {
 	} 
 
 	.hero-unit input {
-		width: 58%!important;
+		width: 55%!important;
 	}
 
 	
@@ -213,7 +215,9 @@ aside {
 	}
 
 	.hero-unit .controls {
-		float: none;
+		float: none!important;
+		width: 100%;
+		margin: 0;
 	}
 
 }

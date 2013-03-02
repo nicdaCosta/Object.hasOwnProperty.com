@@ -1,16 +1,12 @@
-basket.require(
-	{ url : 'js/vendor/modernizr.min.js' , key : 'modernizr' , unique : '1.1.0' },
-	{ url : 'js/vendor/jquery.min.js' , key : 'jQuery' , unique : '1.9' },
-	{ url : 'js/Grep.min.js' , key : 'Grep' , unique : '0.2' }
-).then( function() {
-		
-		'use strict';
+( function ( window , document , $ ){
+
+	'use strict';
 
 		var $hasOwnProperty = function() {
 			//defualt namespace
 
 			// populate history
-			var tmpHistory = localStorage.getItem( 'prevSearches' );
+			var tmpHistory = window.localStorage.getItem( 'prevSearches' );
 
 			$hasOwnProperty.history = ( tmpHistory ) ? tmpHistory.split( ',' ) : [];
 
@@ -35,11 +31,12 @@ basket.require(
 
 			$( 'button.search' ).on( 'click' , $hasOwnProperty.search );
 
-			$( '#Search' ).on( 'keypress' , function( e ) { 
+			$( '#Search' ).on( 'keypress' , function( e ) {
 				
 				if ( e.charCode === 13 ) {
 				
-					$hasOwnProperty.search(); 
+					e.preventDefault();
+					$hasOwnProperty.search();
 				
 				}
 
@@ -86,7 +83,6 @@ basket.require(
 			$( document ).trigger( 'beginSearch' , [ $searchTerm ] );
 
 			// show loader and side panel
-			$( '.alert' )
 			$( '.span3' ).hasClass( 'hide' ) && $( '.span3' ).fadeIn().removeClass( 'hide' );
 
 		};
@@ -123,7 +119,7 @@ basket.require(
 			
 			$prevSearch.push( $searchTerm );
 
-			localStorage.setItem( 'prevSearches' , $prevSearch );
+			window.localStorage.setItem( 'prevSearches' , $prevSearch );
 
 			$( document ).trigger( 'historyUpdated' , [ $prevSearch ] );
 
@@ -192,11 +188,11 @@ basket.require(
 
 		$hasOwnProperty();
 
-});
-
 /*
 
 	Web Platform API link to obtain all URLs,Categories and Labels for given term
 	http://docs.webplatform.org/w/api.php?format=json&action=webplatformsearch&term={{searchTerm}}
 
 */
+
+} ( window , document , jQuery ) );
