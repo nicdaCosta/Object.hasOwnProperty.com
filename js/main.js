@@ -12,13 +12,15 @@
 
 			// init necessary event listeners
 
-			$( '.results' ).on( 'click' , '.isObject' , function() {
+			$( '.results' ).on( 'click' , '.isObject' , function( e ) {
 
 				var $this = $( this ),
 					$parentLI = $this.parent( 'li' );
 
 					// toggle Expanded class on <li> to show children properties
 					$parentLI.toggleClass( 'expanded' );
+
+					e.preventDefault();
 
 
 			} );
@@ -33,7 +35,9 @@
 
 			$( '#Search' ).on( 'keypress' , function( e ) {
 				
-				if ( e.charCode === 13 ) {
+				var keyCode = e.charCode || e.keyCode;
+
+				if ( keyCode === 13 ) {
 				
 					e.preventDefault();
 					$hasOwnProperty.search();
